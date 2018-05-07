@@ -1,33 +1,26 @@
 <!doctype html>
 <html>
-<!--   <style type="text/css">
-        #login,
-        #loggedin {
-            display: none;
-        }
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Fredoka+One|Roboto:300,400" rel="stylesheet">
+<link rel="stylesheet" href="css/bootstrap4-hello-world.css">
 
-        .text-overflow {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            width: 500px;
-        }
-    </style>
-</head> -->
- 
-<body bgcolor="#323232">
+<html>
+<body>
     <div class="container">
+        <form align="center" class=".form-control">
         <div id="login">
-            <h1>Party Host Login</h1>
-            <a href="/login" class="btn btn-sm btn-block btn-green ng-binding">Log in with Spotify</a>
+            <h1 style="color: #72fa72" size="6">Party Host</h1>
         </div>
-        <div id="loggedin">
-            <div id="user-profile">
-            </div>
-            <div id="oauth">
-            </div>
-            <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
-        </div>
+        <font id="pc" size="4" style="color: #66bfed"><font>
+            <script>
+            document.getElementById('pc').innerHTML="Party Code: " + getCookie('pc');
+            function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+}  
+            </script>
+        </form>
     </div>
 </body> 
 
