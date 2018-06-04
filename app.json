@@ -1,0 +1,7 @@
+{
+    "name": "Node.js Getting Started",
+    "description": "Spotify party app",
+    "repository": "https://github.com/larson-adam/spotify-jukebox",
+    "keywords": ["node", "express", "static"],
+    "image": "heroku/nodejs"
+}
