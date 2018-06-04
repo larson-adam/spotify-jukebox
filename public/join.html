@@ -14,8 +14,11 @@
             <p id="badCode" style="color: #dc3545"></p>
             <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
             <script>
+                //const URL = "http://localhost:8888"
+                const URL = "https://spotify-partybox.herokuapp.com/"
+
                 function joinPartyWithCode(partyCode) {
-                    $.post("http://localhost:8888/join-party", { "pc": partyCode }, function (data, status) {
+                    $.post("/join-party", { "pc": partyCode }, function (data, status) {
                         console.log("Attempting to join party with code status: " + status)
                         console.log(partyCode)
                         if (status === "success") {
