@@ -16,6 +16,7 @@ var bodyParser = require('body-parser');
 
 //const URL_ADDRESS = "192.168.1.3";
 const URL_ADDRESS = "localhost";
+const PORT = 8888;
 
 var client_id = 'a00ebad9444f4848b35b79bb9f225cbd'; // Your client id
 var client_secret = 'b216eba609be4c0fb0148c678732fc98'; // Your secret
@@ -48,6 +49,7 @@ var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.set('port', (process.env.PORT || PORT));
 
 app.use(express.static(__dirname + '/public'))
   .use(cookieParser());
@@ -238,8 +240,11 @@ function findIndexByEmail(theEmail) {
   return -1;
 }
 
-console.log('Listening on ' + URL_ADDRESS);
-app.listen(8888);
+//console.log('Listening on ' + URL_ADDRESS);
+app.listen(app.get('port'), function() {
+  console.log('Node app is running on port', app.get('port'))
+})
+//app.listen(8888);
 
 /*
 callFirstPromise().then(function(data) {
