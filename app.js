@@ -15,7 +15,8 @@ var bodyParser = require('body-parser');
 
 
 //const URL_ADDRESS = "192.168.1.3";
-const URL_ADDRESS = "localhost";
+//const URL_ADDRESS = "localhost";
+const URL_ADDRESS = "https://spotify-partybox.herokuapp.com/";
 const PORT = 8888;
 
 var client_id = 'a00ebad9444f4848b35b79bb9f225cbd'; // Your client id
