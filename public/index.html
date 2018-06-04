@@ -18,17 +18,6 @@
             <a href="/join.html" class="btn btn-info btn-lg m-2 btn-wide">Join Party</a>
         </div>
     </div>
-
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-    <script>
-        $.post( "http://localhost:8888/addSong", {"partyCode": 1234},function( data, status ) {
-            console.log( "Data Loaded: " + data );
-            if(status === "success")
-                console.log("Party code found");
-            else
-                console.log("Code not found: ", status);
-        });
-    </script>
 </body>
 
 </html>

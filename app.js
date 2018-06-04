@@ -30,9 +30,9 @@ var email_list = new Array();
  * @param  {number} length The length of the string
  * @return {string} The generated string
  */
-var generateRandomString = function(length) {
+var generateRandomString = function (length) {
   var text = '';
-  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
   for (var i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -50,11 +50,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 app.use(express.static(__dirname + '/public'))
-   .use(cookieParser());
+  .use(cookieParser());
 
 function hostLoginPromise(options) {
-  return new Promise(function(resolve, reject) {
-    request.get(options, function(error, response, body) {
+  return new Promise(function (resolve, reject) {
+    request.get(options, function (error, response, body) {
       if (error) {
         reject(error);
       }
@@ -65,7 +65,7 @@ function hostLoginPromise(options) {
   });
 }
 
-app.get('/login', function(req, res) {
+app.get('/login', function (req, res) {
 
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
@@ -82,7 +82,7 @@ app.get('/login', function(req, res) {
     }));
 });
 
-app.get('/callback', function(req, res) {
+app.get('/callback', function (req, res) {
 
   // your application requests refresh and access tokens
   // after checking the state parameter
@@ -111,13 +111,13 @@ app.get('/callback', function(req, res) {
       json: true
     };
 
-    request.post(authOptions, function(error, response, body) {
+    request.post(authOptions, function (error, response, body) {
       var party_code = generateRandomString(4);
       var current_email = "";
       if (!error && response.statusCode === 200) {
 
         var access_token = body.access_token,
-            refresh_token = body.refresh_token;
+          refresh_token = body.refresh_token;
 
         var options = {
           url: 'https://api.spotify.com/v1/me',
@@ -125,10 +125,11 @@ app.get('/callback', function(req, res) {
           json: true
         };
 
-        hostLoginPromise(options).then(function(data) {
+        hostLoginPromise(options).then(function (data) {
           console.log(data);
           var current_index = email_list.indexOf(data);
-          if(current_index === -1) {
+          console.log(current_index)
+          if (current_index === -1) {
             party_code_arr[party_code_arr.length] = party_code;
             token_arr[token_arr.length] = access_token;
             email_list[email_list.length] = data;
@@ -139,7 +140,7 @@ app.get('/callback', function(req, res) {
           }
           res.cookie("pc", party_code);
           res.redirect('/host.html');
-        }).catch(function(err) {
+        }).catch(function (err) {
           console.log("ERROR: ", err);
         });
 
@@ -156,7 +157,7 @@ app.get('/callback', function(req, res) {
   }
 });
 
-app.get('/refresh_token', function(req, res) {
+app.get('/refresh_token', function (req, res) {
 
   // requesting access token from refresh token
   var refresh_token = req.query.refresh_token;
@@ -170,7 +171,7 @@ app.get('/refresh_token', function(req, res) {
     json: true
   };
 
-  request.post(authOptions, function(error, response, body) {
+  request.post(authOptions, function (error, response, body) {
     if (!error && response.statusCode === 200) {
       var access_token = body.access_token;
       res.send({
@@ -180,7 +181,28 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
-app.get('/getPlaylist', function(request, response) {
+app.post('/join-party', function (request, response) {
+  console.log('Request to join party: ' + request.body.pc)
+  if (partyCodeExists(request.body.pc)) {
+    response.sendStatus(200)
+    console.log("Good Party Code")
+  }
+  else {
+    response.sendStatus(400)
+    console.log("Bad Party Code")
+  }
+})
+
+function partyCodeExists(code) {
+  for(let i = 0; i < party_code_arr.length; i++) {
+    console.log(code + ":" + party_code_arr[i])
+    if(code === party_code_arr[i])
+      return true;
+  }
+  return false
+}
+
+app.get('/getPlaylist', function (request, response) {
   console.log(request.body.pc);
   var aOptions = {
     url: 'https://api.spotify.com/v1/users/{user_id}/playlists/{playlist_id}',
@@ -189,17 +211,17 @@ app.get('/getPlaylist', function(request, response) {
   }
 });
 
-app.post('/addSong', function(request, response) {
+app.post('/addSong', function (request, response) {
   //console.log(request.body);
   if (request.body.partyCode === '1234')
     response.sendStatus(200);
   else
-    response.sendStatus(404);
+    response.sendStatus(203);
 });
 
 function emailAlreadyRegistered(theEmail) {
-  for(var i = 0; i < email_list.length; i++) {
-    if(email_list[i] === theEmail) {
+  for (var i = 0; i < email_list.length; i++) {
+    if (email_list[i] === theEmail) {
       return true;
     }
   }
@@ -207,8 +229,8 @@ function emailAlreadyRegistered(theEmail) {
 }
 
 function findIndexByEmail(theEmail) {
-  for(var i = 0; i < email_list.length; i++) {
-    if(email_list[i] == theEmail) {
+  for (var i = 0; i < email_list.length; i++) {
+    if (email_list[i] == theEmail) {
       console.log(i + " : " + theEmail + " : " + email_list[i]);
       return i;
     }
@@ -216,7 +238,7 @@ function findIndexByEmail(theEmail) {
   return -1;
 }
 
-console.log('Listening on 8888');
+console.log('Listening on ' + URL_ADDRESS);
 app.listen(8888);
 
 /*

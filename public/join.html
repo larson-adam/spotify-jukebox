@@ -9,8 +9,27 @@
     <div class="container">
         <form align="center" class=".form-control">
             <h1 style="color: #72fa72">Enter Party Code</h1>
-            <input type="text" name="firstname">
-            <a href="/check-code" class="btn btn-success btn-lg m-2 btn-wide">Join</a>
+            <input id="codeBox" type="text" name="firstname">
+            <a onclick="joinPartyWithCode(document.getElementById('codeBox').value)" class="btn btn-success btn-lg m-2 btn-wide">Join</a>
+            <p id="badCode" style="color: #dc3545"></p>
+            <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+            <script>
+                function joinPartyWithCode(partyCode) {
+                    $.post("http://localhost:8888/join-party", { "pc": partyCode }, function (data, status) {
+                        console.log("Attempting to join party with code status: " + status)
+                        console.log(partyCode)
+                        if (status === "success") {
+                            console.log("Party code found");
+                            window.location.replace('/lobby.html')
+                        }
+                    })
+                        .fail(function (response, status) {
+                            console.log("Code not found: " + status);
+                            var element = document.getElementById("badCode");
+                            element.innerHTML = "Bad Code! Try again.";
+                        })
+                }
+            </script>
         </form>
 
     </div>
