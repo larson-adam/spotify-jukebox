@@ -142,6 +142,7 @@ app.get('/callback', function (req, res) {
             party_code = party_code_arr[current_index];
             access_token = token_arr[current_index];
           }
+          console.log(data.id + " created a party with code: " + party_code)
           res.cookie("pc", party_code);
           res.cookie("at", access_token);
           res.cookie("id", data.id)
