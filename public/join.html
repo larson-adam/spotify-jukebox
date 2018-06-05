@@ -14,9 +14,9 @@
             <p id="badCode" style="color: #dc3545"></p>
             <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
             <script>
-                //const URL = "http://localhost:8888"
+                const URL = "http://localhost:8888"
                 //const URL = "https://spotify-partybox.herokuapp.com"
-                const URL = "http://www.jukibox.com"
+                //const URL = "http://www.jukibox.com"
 
                 function joinPartyWithCode(partyCode) {
                     $.post(URL + "/join-party", { "pc": partyCode }, function (data, status) {
@@ -24,6 +24,7 @@
                         console.log(partyCode)
                         if (status === "success") {
                             console.log("Party code found");
+                            document.cookie = 'pc='+partyCode+';';
                             window.location.replace('/lobby.html')
                         }
                     })

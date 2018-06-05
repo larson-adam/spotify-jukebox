@@ -9,9 +9,32 @@
     <div class="container">
         <form align="center" class=".form-control">
             <h1 style="color: #72fa72">Welcome to the party!</h1>
-            
+            <font id="pc" size="4" style="color: #66bfed"></font>
+            <div>
+                <a onclick="createPlaylist()" class="btn btn-success btn-lg m-2 btn-wide">Create Playlist</a>
+            </div>
+            <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
             <script>
+                const URL = "http://localhost:8888"
+                //const URL = "https://spotify-partybox.herokuapp.com"
+                //const URL = "http://www.jukibox.com"
                 
+                document.getElementById('pc').innerHTML = "Party Code: " + getCookie('pc');
+                function getCookie(name) {
+                    var value = "; " + document.cookie;
+                    var parts = value.split("; " + name + "=");
+                    if (parts.length == 2) return parts.pop().split(";").shift();
+                }
+                function createPlaylist() {
+                    $.post(URL + "/create-playlist", { "pc": getCookie('pc') }, function (data, status) {
+                        console.log("Attempting to create playist for: " + getCookie('id'))
+                        if (status === "success") {
+                        }
+                    })
+                        .fail(function (response, status) {
+                            console.log("Failed to create playlist for: " + getCookie('id'));
+                        })
+                }
             </script>
         </form>
 

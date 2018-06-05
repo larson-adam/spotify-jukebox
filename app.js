@@ -15,17 +15,18 @@ var bodyParser = require('body-parser');
 
 
 //const URL_ADDRESS = "192.168.1.3";
-//const URL_ADDRESS = "localhost";
+const URL_ADDRESS = "localhost";
 //const URL_ADDRESS = "spotify-partybox.herokuapp.com";
-const URL_ADDRESS = "www.jukibox.com";
+//const URL_ADDRESS = "www.jukibox.com";
 const PORT = 8888;
 
 var client_id = 'a00ebad9444f4848b35b79bb9f225cbd'; // Your client id
 var client_secret = 'b216eba609be4c0fb0148c678732fc98'; // Your secret
-var redirect_uri = 'http://' + URL_ADDRESS + '/callback'; // Your redirect uri
+var redirect_uri = 'http://' + URL_ADDRESS + ":"+ PORT + '/callback'; // Your redirect uri
 var token_arr = new Array();
 var party_code_arr = new Array();
 var email_list = new Array();
+var user_ids = new Array();
 
 
 /**
@@ -35,7 +36,7 @@ var email_list = new Array();
  */
 var generateRandomString = function (length) {
   var text = '';
-  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  var possible = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
 
   for (var i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -63,8 +64,7 @@ function hostLoginPromise(options) {
         reject(error);
       }
       current_email = body.email;
-      console.log(current_email);
-      resolve(body.email);
+      resolve({'email':body.email, 'id':body.id});
     })
   });
 }
@@ -75,7 +75,7 @@ app.get('/login', function (req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -118,8 +118,8 @@ app.get('/callback', function (req, res) {
     request.post(authOptions, function (error, response, body) {
       var party_code = generateRandomString(4);
       var current_email = "";
+      var user_id = "";
       if (!error && response.statusCode === 200) {
-
         var access_token = body.access_token,
           refresh_token = body.refresh_token;
 
@@ -130,19 +130,20 @@ app.get('/callback', function (req, res) {
         };
 
         hostLoginPromise(options).then(function (data) {
-          console.log(data);
-          var current_index = email_list.indexOf(data);
-          console.log(current_index)
+          var current_index = email_list.indexOf(data.email);
           if (current_index === -1) {
             party_code_arr[party_code_arr.length] = party_code;
             token_arr[token_arr.length] = access_token;
-            email_list[email_list.length] = data;
+            email_list[email_list.length] = data.email;
+            user_ids[user_ids.length] = data.id;
           }
           else {
             party_code = party_code_arr[current_index];
             access_token = token_arr[current_index];
           }
           res.cookie("pc", party_code);
+          res.cookie("at", access_token);
+          res.cookie("id", data.id)
           res.redirect('/host.html');
         }).catch(function (err) {
           console.log("ERROR: ", err);
@@ -187,7 +188,9 @@ app.get('/refresh_token', function (req, res) {
 
 app.post('/join-party', function (request, response) {
   console.log('Request to join party: ' + request.body.pc)
-  if (partyCodeExists(request.body.pc)) {
+  let access_token_index = partyCodeExists(request.body.pc)
+  if (access_token_index >= 0) {
+    response.cookie("at", token_arr[access_token_index])
     response.sendStatus(200)
     console.log("Good Party Code")
   }
@@ -201,20 +204,60 @@ function partyCodeExists(code) {
   for(let i = 0; i < party_code_arr.length; i++) {
     console.log(code + ":" + party_code_arr[i])
     if(code === party_code_arr[i])
-      return true;
+      return i;
   }
-  return false
+  return -1
 }
 
-app.get('/getPlaylist', function (request, response) {
-  console.log(request.body.pc);
-  var aOptions = {
-    url: 'https://api.spotify.com/v1/users/{user_id}/playlists/{playlist_id}',
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true
-  }
+app.post('/create-playlist', function (req, res) {
+  let index = partyCodeExists(req.body.pc)
+  let at = token_arr[index]
+  let userID = user_ids[index]
+  console.log("Create playlist request for user: " + userID)
+  var authOptions = {
+    url: 'https://api.spotify.com/v1/users/' + userID + '/playlists',
+    body: JSON.stringify({
+      'name': req.body.pc,
+      'description': 'Jukibox playlist',
+      'public': false
+    }),
+    dataType:'json',
+    headers: { 
+      'Authorization': 'Bearer ' + at,
+      'Content-Type': 'application/json'
+    }
+  };
+  console.log(authOptions)
+  request.post(authOptions, function (error, response, body) {
+    console.log(body);
+    if (!error && response.statusCode === 200) {
+      console.log("success")
+      res.sendStatus(200);
+    }
+  });
+  //let url = 'https://api.spotify.com/v1/users/' + userID + '/playlists'
+  //$.ajax
+  res.sendStatus(200)
 });
-
+/*
+method: 'POST',
+		data: JSON.stringify({
+			'name': name,
+			'public': false
+		}),
+		dataType: 'json',
+		headers: {
+			'Authorization': 'Bearer ' + g_access_token,
+			'Content-Type': 'application/json'
+		},
+		success: function(r) {
+			console.log('create playlist response', r);
+			callback(r.id);
+		},
+		error: function(r) {
+			callback(null);
+		}
+*/
 app.post('/addSong', function (request, response) {
   //console.log(request.body);
   if (request.body.partyCode === '1234')
