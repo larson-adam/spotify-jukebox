@@ -15,14 +15,15 @@ var bodyParser = require('body-parser');
 
 
 //const URL_ADDRESS = "192.168.1.3";
-const URL_ADDRESS = "localhost";
+//const URL_ADDRESS = "localhost";
 //const URL_ADDRESS = "spotify-partybox.herokuapp.com";
-//const URL_ADDRESS = "www.jukibox.com";
-const PORT = 8888;
+const URL_ADDRESS = "www.jukibox.com";
+//const PORT = 8888;
 
 var client_id = 'a00ebad9444f4848b35b79bb9f225cbd'; // Your client id
 var client_secret = 'b216eba609be4c0fb0148c678732fc98'; // Your secret
-var redirect_uri = 'http://' + URL_ADDRESS + ":"+ PORT + '/callback'; // Your redirect uri
+//var redirect_uri = 'http://' + URL_ADDRESS + ":"+ PORT + '/callback'; // Your redirect uri
+var redirect_uri = 'http://' + URL_ADDRESS + '/callback'; // Your redirect uri
 var token_arr = new Array();
 var party_code_arr = new Array();
 var email_list = new Array();
