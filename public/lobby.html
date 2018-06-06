@@ -7,11 +7,15 @@
 
 <body>
     <div class="container">
-        <form align="center" class=".form-control">
+        <form onSubmit="return false;" align="center" class=".form-control">
             <h1 style="color: #72fa72">Welcome to the party!</h1>
             <font id="pc" size="4" style="color: #66bfed"></font>
             <div>
-                <a onclick="createPlaylist()" class="btn btn-success btn-lg m-2 btn-wide">Create Playlist</a>
+                <input id="searchBox" type="text">
+                <a id="searchButton" onclick="searchSpotify(document.getElementById('searchBox').value)" class="btn btn-success btn-lg m-2 btn-wide">Search</a>
+            </div>
+            <div>
+                <textarea id="textSpace" style="height: 700; width: 600"></textarea>
             </div>
             <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
             <script>
@@ -35,6 +39,35 @@
                             console.log("Failed to create playlist for: " + getCookie('id'));
                         })
                 }
+                function searchSpotify(track) {
+                    $.post(URL + "/search", { "pc": getCookie('pc'), "track": track }, function (data, status) {
+                        console.log("Searching for: " + track)
+                        if (status === "success") {
+                            console.log("Results found: " + data)
+                            let results = ""
+                            if(data.names.length > 0) {
+                                for(let i = 0; i < data.names.length; i++) {   
+                                    results += data.names[i] + ' by: ' + data.artists[i] + '\n\n'
+                                }
+                            }
+                            else {
+                                results = "No results found"
+                            }
+                            document.getElementById('textSpace').innerHTML = results
+                            localStorage.setItem('searchResults', JSON.stringify(data));
+                        }
+                    })
+                        .fail(function (response, status) {
+                            console.log("No results found");
+                        })
+                }
+                var input = document.getElementById("searchBox");
+                input.addEventListener("keyup", function (event) {
+                    event.preventDefault();
+                    if (event.keyCode === 13) {
+                        document.getElementById("searchButton").click();
+                    }
+                });
             </script>
         </form>
 
