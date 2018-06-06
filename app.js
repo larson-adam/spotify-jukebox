@@ -15,15 +15,15 @@ var bodyParser = require('body-parser');
 
 
 //const URL_ADDRESS = "192.168.1.3";
-//const URL_ADDRESS = "localhost";
+c//onst URL_ADDRESS = "localhost";
 //const URL_ADDRESS = "spotify-partybox.herokuapp.com";
 const URL_ADDRESS = "www.jukibox.com";
 const PORT = 8888;
 
 var client_id = 'a00ebad9444f4848b35b79bb9f225cbd'; // Your client id
 var client_secret = 'b216eba609be4c0fb0148c678732fc98'; // Your secret
-//var redirect_uri = 'http://' + URL_ADDRESS + ":" + PORT + '/callback'; // Your redirect uri
-var redirect_uri = 'http://' + URL_ADDRESS + '/callback'; // Your redirect uri
+var redirect_uri = 'http://' + URL_ADDRESS + ":" + PORT + '/callback'; // Your redirect uri
+//var redirect_uri = 'http://' + URL_ADDRESS + '/callback'; // Your redirect uri
 var token_arr = new Array();
 var party_code_arr = new Array();
 var email_list = new Array();
@@ -64,7 +64,7 @@ function hostLoginPromise(options) {
       if (error) {
         reject(error);
       }
-      current_email = body.email;
+      console.log(body)
       resolve({ 'email': body.email, 'id': body.id });
     })
   });
@@ -118,7 +118,6 @@ app.get('/callback', function (req, res) {
 
     request.post(authOptions, function (error, response, body) {
       var party_code = generateRandomString(4);
-      var current_email = "";
       var user_id = "";
       if (!error && response.statusCode === 200) {
         var access_token = body.access_token,
@@ -255,13 +254,15 @@ app.post('/search', function (req, res) {
     let searchArtists = [10]
     let searchNames = [10]
     let searchIDs = [10]
+    let searchImages = [10]
     for(let i = 0; i < 10; i++) {
         searchArtists[i] = data.tracks.items[i].artists[0].name
         searchNames[i] = data.tracks.items[i].name
         searchIDs[i] = data.tracks.items[i].id
+        searchImages[i] = data.tracks.items[i].album.images[2].url  
     }
-    let searchResults = { 'artists': searchArtists, 'names': searchNames, 'ids':searchIDs }
-    console.log(JSON.stringify(searchResults))
+    let searchResults = { 'artists': searchArtists, 'names': searchNames, 'ids':searchIDs, 'images':searchImages }
+    //console.log(JSON.stringify(searchResults))
     //res.cookie(searchResults)
     res.send(searchResults)
     //res.sendStatus(200);

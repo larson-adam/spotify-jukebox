@@ -14,14 +14,14 @@
                 <input id="searchBox" type="text">
                 <a id="searchButton" onclick="searchSpotify(document.getElementById('searchBox').value)" class="btn btn-success btn-lg m-2 btn-wide">Search</a>
             </div>
-            <div>
-                <textarea id="textSpace" style="height: 700; width: 600"></textarea>
-            </div>
+            <div id="theButtons">
+                </div>
             <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
             <script>
-                //const URL = "http://localhost:8888"
+                const URL = "http://localhost:8888"
                 //const URL = "https://spotify-partybox.herokuapp.com"
-                const URL = "http://www.jukibox.com"
+                //const URL = "http://www.jukibox.com"
 
                 document.getElementById('pc').innerHTML = "Party Code: " + getCookie('pc');
                 function getCookie(name) {
@@ -45,15 +45,21 @@
                         if (status === "success") {
                             console.log("Results found: " + data)
                             let results = ""
-                            if(data.names.length > 0) {
-                                for(let i = 0; i < data.names.length; i++) {   
+                            if (data.names.length > 0) {
+                                for (let i = 0; i < data.names.length; i++) {
                                     results += data.names[i] + ' by: ' + data.artists[i] + '\n\n'
                                 }
                             }
                             else {
                                 results = "No results found"
                             }
-                            document.getElementById('textSpace').innerHTML = results
+                            //document.getElementById('textSpace').innerHTML = results
+                            let sHTML = "";
+                            for (let i = 0; i < data.artists.length; i++) {
+                                sHTML += '<div><button onclick="deleteSearchButtons()" type="button" class="btn btn - primary" style="width: 350px; height: 75px"><table style="width: 250px;" ><tr valign="top"><td style="text-align: left;">Artist: ' + data.artists[i]
+                                    + '</td><td rowspan="2"><img src="' + data.images[i] + '" style="height: 64px; width: 64px;" /></td></tr><tr><td style="text-align: left;">Song: ' + data.names[i] + '</td></tr></table> </button></div>';
+                            }
+                            $('#theButtons').html(sHTML);
                             localStorage.setItem('searchResults', JSON.stringify(data));
                         }
                     })
@@ -61,6 +67,9 @@
                             console.log("No results found");
                         })
                 }
+                function deleteSearchButtons() {
+                    $('#theButtons').html("");
+		        }
                 var input = document.getElementById("searchBox");
                 input.addEventListener("keyup", function (event) {
                     event.preventDefault();
