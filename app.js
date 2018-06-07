@@ -15,19 +15,20 @@ var bodyParser = require('body-parser');
 
 
 //const URL_ADDRESS = "192.168.1.3";
-//onst URL_ADDRESS = "localhost";
+//const URL_ADDRESS = "localhost";
 //const URL_ADDRESS = "spotify-partybox.herokuapp.com";
 const URL_ADDRESS = "www.jukibox.com";
 const PORT = 8888;
 
 var client_id = 'a00ebad9444f4848b35b79bb9f225cbd'; // Your client id
 var client_secret = 'b216eba609be4c0fb0148c678732fc98'; // Your secret
-//var redirect_uri = 'http://' + URL_ADDRESS + ":" + PORT + '/callback'; // Your redirect uri
-var redirect_uri = 'http://' + URL_ADDRESS + '/callback'; // Your redirect uri
+var redirect_uri = 'http://' + URL_ADDRESS + ":" + PORT + '/callback'; // Your redirect uri
+//var redirect_uri = 'http://' + URL_ADDRESS + '/callback'; // Your redirect uri
 var token_arr = new Array();
 var party_code_arr = new Array();
 var email_list = new Array();
 var user_ids = new Array();
+var playlist_ids = new Array();
 
 
 /**
@@ -64,7 +65,7 @@ function hostLoginPromise(options) {
       if (error) {
         reject(error);
       }
-      console.log(body)
+      //console.log(body)
       resolve({ 'email': body.email, 'id': body.id });
     })
   });
@@ -223,11 +224,50 @@ function createPlaylist(pc) {
     headers: {
       'Authorization': 'Bearer ' + at,
       'Content-Type': 'application/json'
-    }
+    },
+    //json: true
   };
-  request.post(authOptions, function (error, response, body) {
-  });
+  playlistIDPromise(authOptions).then(function (data) {
+    console.log(data.id)
+    playlist_ids[index] = data.id
+  })
 };
+
+function playlistIDPromise(options) {
+  return new Promise(function (resolve, reject) {
+    request.post(options, function (error, response, body) {
+      if (error) {
+        reject(error);
+      }
+      let bodyObject = JSON.parse(body)
+      resolve({ 'id': bodyObject.id });
+    })
+  });
+}
+
+app.post('/add-song', function (req, res) {
+  let index = partyCodeExists(req.body.pc)
+  let at = token_arr[index]
+  let userID = user_ids[index]
+  let playlistID = playlist_ids[index]
+  console.log(playlistID)
+  var options = {
+    url: 'https://api.spotify.com/v1/users/' + userID + '/playlists/' + playlistID + '/tracks',
+    dataType: 'json',
+    headers: {
+      'Authorization': 'Bearer ' + at,
+      'Content-Type': 'application/json'
+    },
+    qs: {
+      uris: req.body.songURI
+    },
+    json: true
+  }
+  request.post(options, function (error, response, body) {
+
+  })
+  res.sendStatus(200)
+})
 
 app.post('/search', function (req, res) {
   console.log(req.body.pc)
@@ -240,7 +280,7 @@ app.post('/search', function (req, res) {
     qs: {
       q: req.body.track,
       type: 'track',
-      limit: 10
+      limit: 15
     },
     dataType: 'json',
     headers: {
@@ -251,20 +291,26 @@ app.post('/search', function (req, res) {
   }
   searchPromise(authOptions).then(function (data) {
     //res.cookie('tracks', data.tracks)
-    let searchArtists = [10]
-    let searchNames = [10]
-    let searchIDs = [10]
-    let searchImages = [10]
-    for(let i = 0; i < 10; i++) {
+    if (data.tracks.items.length === 0)
+      res.send({ 'artists': [], 'names': [], 'uris': [], 'images': [] })
+    else {
+      let searchArtists = [15]
+      let searchNames = [15]
+      let searchURIs = [15]
+      let searchImages = [15]
+      for (let i = 0; i < data.tracks.items.length; i++) {
+        console.log(data.tracks.items[i])
         searchArtists[i] = data.tracks.items[i].artists[0].name
         searchNames[i] = data.tracks.items[i].name
-        searchIDs[i] = data.tracks.items[i].id
-        searchImages[i] = data.tracks.items[i].album.images[2].url  
+        searchURIs[i] = data.tracks.items[i].uri
+        console.log(data.tracks.items[i].uri)
+        searchImages[i] = data.tracks.items[i].album.images[2].url
+      }
+      let searchResults = { 'artists': searchArtists, 'names': searchNames, 'uris': searchURIs, 'images': searchImages }
+      //console.log(JSON.stringify(searchResults))
+      //res.cookie(searchResults)
+      res.send(searchResults)
     }
-    let searchResults = { 'artists': searchArtists, 'names': searchNames, 'ids':searchIDs, 'images':searchImages }
-    //console.log(JSON.stringify(searchResults))
-    //res.cookie(searchResults)
-    res.send(searchResults)
     //res.sendStatus(200);
   }).catch(function (err) {
     console.log("ERROR: ", err);

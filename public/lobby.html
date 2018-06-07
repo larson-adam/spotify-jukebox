@@ -14,8 +14,8 @@
                 <input id="searchBox" type="text">
                 <a id="searchButton" onclick="searchSpotify(document.getElementById('searchBox').value)" class="btn btn-success btn-lg m-2 btn-wide">Search</a>
             </div>
-            <div id="theButtons">
-                </div>
+            <div id="searchResultsButtons">
+            </div>
             <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
             <script>
@@ -43,23 +43,20 @@
                     $.post(URL + "/search", { "pc": getCookie('pc'), "track": track }, function (data, status) {
                         console.log("Searching for: " + track)
                         if (status === "success") {
-                            console.log("Results found: " + data)
-                            let results = ""
-                            if (data.names.length > 0) {
-                                for (let i = 0; i < data.names.length; i++) {
-                                    results += data.names[i] + ' by: ' + data.artists[i] + '\n\n'
-                                }
+                            console.log(data.names.length)
+                            if (data.names.length === 0) {
+                                $('#searchResultsButtons').html('<div><font id="noResultsAlert" size="4" style="color: #f65683">No results found.</font></div>');
                             }
                             else {
-                                results = "No results found"
+                                //document.getElementById('textSpace').innerHTML = results
+                                let sHTML = "";
+                                for (let i = 0; i < data.artists.length; i++) {
+                                    sHTML += '<div><button id="searchResult' + i + '" onclick="addSong(' + i + ')" type="button" class="btn btn-outline-light btn-block m-2" style="width: 350px; height: 80px"><table style="margin-left: 10px; margin-right: 10px; width: 310px;" ><tr valign="top"><td style="text-align: left; min-width: 170px; max-width: 170px; overflow: hidden;">Song: ' + data.names[i]
+                                        + '</td><td rowspan="2"><img src="' + data.images[i] + '" style="height: 64px; width: 64px; left-margin: 25;" /></td></tr><tr><td  style="text-align: left; max-width: 170px; overflow: hidden;">Artist: ' + data.artists[i] + '</td></tr></table> </button></div>';
+                                }
+                                $('#searchResultsButtons').html(sHTML);
                             }
-                            //document.getElementById('textSpace').innerHTML = results
-                            let sHTML = "";
-                            for (let i = 0; i < data.artists.length; i++) {
-                                sHTML += '<div><button onclick="deleteSearchButtons()" type="button" class="btn btn - primary" style="width: 350px; height: 75px"><table style="width: 250px;" ><tr valign="top"><td style="text-align: left;">Artist: ' + data.artists[i]
-                                    + '</td><td rowspan="2"><img src="' + data.images[i] + '" style="height: 64px; width: 64px;" /></td></tr><tr><td style="text-align: left;">Song: ' + data.names[i] + '</td></tr></table> </button></div>';
-                            }
-                            $('#theButtons').html(sHTML);
+
                             localStorage.setItem('searchResults', JSON.stringify(data));
                         }
                     })
@@ -67,9 +64,17 @@
                             console.log("No results found");
                         })
                 }
+                function addSong(index) {
+                    let lsData = JSON.parse(localStorage.getItem('searchResults'))
+                    console.log(lsData.uris[index])
+                    $.post(URL + "/add-song", { "songURI": lsData.uris[index], "pc": getCookie('pc') }, function (data, status) {
+
+                    })
+                    deleteSearchButtons()
+                }
                 function deleteSearchButtons() {
-                    $('#theButtons').html("");
-		        }
+                    $('#searchResultsButtons').html("");
+                }
                 var input = document.getElementById("searchBox");
                 input.addEventListener("keyup", function (event) {
                     event.preventDefault();

@@ -6,24 +6,87 @@
 
 <html>
 
-<body>
-    <div class="container">
-        <form align="center" class=".form-control">
-            <div id="login">
-                <h1 style="color: #72fa72" size="6">Party Host</h1>
-            </div>
-            <font id="pc" size="4" style="color: #66bfed">
-                <font>
-                    <script>
-                        document.getElementById('pc').innerHTML = "Party Code: " + getCookie('pc');
-                        function getCookie(name) {
-                            var value = "; " + document.cookie;
-                            var parts = value.split("; " + name + "=");
-                            if (parts.length == 2) return parts.pop().split(";").shift();
-                        }  
-                    </script>
-        </form>
-    </div>
-</body>
+        <body>
+                <div class="container">
+                    <form onSubmit="return false;" align="center" class=".form-control">
+                        <h1 style="color: #72fa72">Welcome to the party!</h1>
+                        <font id="pc" size="4" style="color: #66bfed"></font>
+                        <div>
+                            <input id="searchBox" type="text">
+                            <a id="searchButton" onclick="searchSpotify(document.getElementById('searchBox').value)" class="btn btn-success btn-lg m-2 btn-wide">Search</a>
+                        </div>
+                        <div id="searchResultsButtons">
+                        </div>
+                        <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+                        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+                        <script>
+                            //const URL = "http://localhost:8888"
+                            //const URL = "https://spotify-partybox.herokuapp.com"
+                            const URL = "http://www.jukibox.com"
+            
+                            document.getElementById('pc').innerHTML = "Party Code: " + getCookie('pc');
+                            function getCookie(name) {
+                                var value = "; " + document.cookie;
+                                var parts = value.split("; " + name + "=");
+                                if (parts.length == 2) return parts.pop().split(";").shift();
+                            }
+                            function createPlaylist() {
+                                $.post(URL + "/create-playlist", { "pc": getCookie('pc') }, function (data, status) {
+                                    console.log("Attempting to create playist for: " + getCookie('id'))
+                                    if (status === "success") {
+                                    }
+                                })
+                                    .fail(function (response, status) {
+                                        console.log("Failed to create playlist for: " + getCookie('id'));
+                                    })
+                            }
+                            function searchSpotify(track) {
+                                $.post(URL + "/search", { "pc": getCookie('pc'), "track": track }, function (data, status) {
+                                    console.log("Searching for: " + track)
+                                    if (status === "success") {
+                                        console.log(data.names.length)
+                                        if (data.names.length === 0) {
+                                            $('#searchResultsButtons').html('<div><font id="noResultsAlert" size="4" style="color: #f65683">No results found.</font></div>');
+                                        }
+                                        else {
+                                            //document.getElementById('textSpace').innerHTML = results
+                                            let sHTML = "";
+                                            for (let i = 0; i < data.artists.length; i++) {
+                                                sHTML += '<div><button id="searchResult' + i + '" onclick="addSong(' + i + ')" type="button" class="btn btn-outline-light btn-block m-2" style="width: 350px; height: 80px"><table style="margin-left: 10px; margin-right: 10px; width: 310px;" ><tr valign="top"><td style="text-align: left; min-width: 170px; max-width: 170px; overflow: hidden;">Song: ' + data.names[i]
+                                                    + '</td><td rowspan="2"><img src="' + data.images[i] + '" style="height: 64px; width: 64px; left-margin: 25;" /></td></tr><tr><td  style="text-align: left; max-width: 170px; overflow: hidden;">Artist: ' + data.artists[i] + '</td></tr></table> </button></div>';
+                                            }
+                                            $('#searchResultsButtons').html(sHTML);
+                                        }
+            
+                                        localStorage.setItem('searchResults', JSON.stringify(data));
+                                    }
+                                })
+                                    .fail(function (response, status) {
+                                        console.log("No results found");
+                                    })
+                            }
+                            function addSong(index) {
+                                let lsData = JSON.parse(localStorage.getItem('searchResults'))
+                                console.log(lsData.uris[index])
+                                $.post(URL + "/add-song", { "songURI": lsData.uris[index], "pc": getCookie('pc') }, function (data, status) {
+            
+                                })
+                                deleteSearchButtons()
+                            }
+                            function deleteSearchButtons() {
+                                $('#searchResultsButtons').html("");
+                            }
+                            var input = document.getElementById("searchBox");
+                            input.addEventListener("keyup", function (event) {
+                                event.preventDefault();
+                                if (event.keyCode === 13) {
+                                    document.getElementById("searchButton").click();
+                                }
+                            });
+                        </script>
+                    </form>
+            
+                </div>
+            </body>
 
 </html>
