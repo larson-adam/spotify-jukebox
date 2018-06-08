@@ -233,6 +233,48 @@ function createPlaylist(pc) {
   })
 };
 
+app.post('/fetch-playlist', function (req, res) {
+  console.log('Attempt to fetch playlist')
+  let index = partyCodeExists(req.body.pc)
+  if (index < 0) {
+    console.log('Party code did not exist')
+    res.sendStatus(404)
+  }
+  else {
+    let at = token_arr[index]
+    let userID = user_ids[index]
+    let playlistID = playlist_ids[index]
+    console.log(playlistID)
+    var options = {
+      url: 'https://api.spotify.com/v1/users/' + userID + '/playlists/' + playlistID,
+      dataType: 'json',
+      headers: {
+        'Authorization': 'Bearer ' + at,
+        'Content-Type': 'application/json'
+      },
+      json: true
+    }
+    request.get(options, function (error, response, body) {
+      if (!error && (body.tracks.items.length > 0)) {
+        let playlistArtists = new Array()
+        let playlistSongs = new Array()
+        let playlistImages = Array()
+        for (let i = 0; i < body.tracks.items.length; i++) {
+          playlistArtists[i] = body.tracks.items[i].track.album.artists[0].name
+          playlistSongs[i] = body.tracks.items[i].track.name
+          playlistImages[i] = body.tracks.items[i].track.album.images[2].url
+        }
+        res.send({ 'artists': playlistArtists, 'names': playlistSongs, 'images': playlistImages })
+      }
+      else if (!error) {
+        res.send({ 'artists': [], 'names': [], 'images': [] })
+      }
+      else
+        res.sendStatus(404)
+    })
+  }
+})
+
 function playlistIDPromise(options) {
   return new Promise(function (resolve, reject) {
     request.post(options, function (error, response, body) {
@@ -299,11 +341,9 @@ app.post('/search', function (req, res) {
       let searchURIs = [15]
       let searchImages = [15]
       for (let i = 0; i < data.tracks.items.length; i++) {
-        console.log(data.tracks.items[i])
         searchArtists[i] = data.tracks.items[i].artists[0].name
         searchNames[i] = data.tracks.items[i].name
         searchURIs[i] = data.tracks.items[i].uri
-        console.log(data.tracks.items[i].uri)
         searchImages[i] = data.tracks.items[i].album.images[2].url
       }
       let searchResults = { 'artists': searchArtists, 'names': searchNames, 'uris': searchURIs, 'images': searchImages }

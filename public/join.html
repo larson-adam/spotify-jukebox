@@ -7,10 +7,10 @@
 
 <body>
     <div class="container">
-        <form align="center" class=".form-control">
+        <form onSubmit="return false;" align="center" class=".form-control">
             <h1 style="color: #72fa72">Enter Party Code</h1>
             <input id="codeBox" type="text" name="firstname">
-            <a onclick="joinPartyWithCode(document.getElementById('codeBox').value)" class="btn btn-success btn-lg m-2 btn-wide">Join</a>
+            <a id="joinButton" onclick="joinPartyWithCode(document.getElementById('codeBox').value)" class="btn btn-success btn-lg m-2 btn-wide">Join</a>
             <p id="badCode" style="color: #dc3545"></p>
             <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
             <script>
@@ -34,6 +34,13 @@
                             element.innerHTML = "Invalid Code.";
                         })
                 }
+                var input = document.getElementById("codeBox");
+                            input.addEventListener("keyup", function (event) {
+                                event.preventDefault();
+                                if (event.keyCode === 13) {
+                                    document.getElementById("joinButton").click();
+                                }
+                            });
             </script>
         </form>
 

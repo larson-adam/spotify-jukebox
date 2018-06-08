@@ -9,13 +9,17 @@
         <body>
                 <div class="container">
                     <form onSubmit="return false;" align="center" class=".form-control">
-                        <h1 style="color: #72fa72">Welcome to the party!</h1>
-                        <font id="pc" size="4" style="color: #66bfed"></font>
+                        <h1 style="color: #72fa72">Hosting Party</h1>
+                        <div><font id="dir1" size="4" style="color: #72fa72">A playlist has been created on your Spotify account</font></div>
+                        <div><font id="dir2" size="4" style="color: #72fa72">Play it to get this party started</font></div>
+                        <div><font id="pc" size="4" style="color: #66bfed"></font></div>
                         <div>
                             <input id="searchBox" type="text">
                             <a id="searchButton" onclick="searchSpotify(document.getElementById('searchBox').value)" class="btn btn-success btn-lg m-2 btn-wide">Search</a>
                         </div>
                         <div id="searchResultsButtons">
+                        </div>
+                        <div id="playlistList">
                         </div>
                         <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
                         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -39,6 +43,7 @@
                                     .fail(function (response, status) {
                                         console.log("Failed to create playlist for: " + getCookie('id'));
                                     })
+
                             }
                             function searchSpotify(track) {
                                 $.post(URL + "/search", { "pc": getCookie('pc'), "track": track }, function (data, status) {
@@ -52,7 +57,7 @@
                                             //document.getElementById('textSpace').innerHTML = results
                                             let sHTML = "";
                                             for (let i = 0; i < data.artists.length; i++) {
-                                                sHTML += '<div><button id="searchResult' + i + '" onclick="addSong(' + i + ')" type="button" class="btn btn-outline-light btn-block m-2" style="width: 350px; height: 80px"><table style="margin-left: 10px; margin-right: 10px; width: 310px;" ><tr valign="top"><td style="text-align: left; min-width: 170px; max-width: 170px; overflow: hidden;">Song: ' + data.names[i]
+                                                sHTML += '<div><button id="searchResult' + i + '" onclick="addSong(' + i + ')" type="button" class="btn btn-outline-light btn-block m-2" style="margin-left: 30px; width: 350px; height: 80px"><table style="margin-left: 10px; margin-right: 10px; width: 310px;" ><tr valign="top"><td style="text-align: left; min-width: 170px; max-width: 170px; overflow: hidden;">Song: ' + data.names[i]
                                                     + '</td><td rowspan="2"><img src="' + data.images[i] + '" style="height: 64px; width: 64px; left-margin: 25;" /></td></tr><tr><td  style="text-align: left; max-width: 170px; overflow: hidden;">Artist: ' + data.artists[i] + '</td></tr></table> </button></div>';
                                             }
                                             $('#searchResultsButtons').html(sHTML);
@@ -65,14 +70,33 @@
                                         console.log("No results found");
                                     })
                             }
-                            function addSong(index) {
+                            function addSong(i) {
                                 let lsData = JSON.parse(localStorage.getItem('searchResults'))
-                                console.log(lsData.uris[index])
-                                $.post(URL + "/add-song", { "songURI": lsData.uris[index], "pc": getCookie('pc') }, function (data, status) {
-            
+                                //console.log(lsData.uris[i])
+                                addThenFetchPromise(lsData, i).then(function(data){
+                                    deleteSearchButtons()
+                                    setTimeout(function (){
+                                        fetchPlaylist()
+                                    }, 200);          
                                 })
-                                deleteSearchButtons()
+                                .catch(function (err) {
+                                    console.log("ERROR: ", err);
+                                });             
                             }
+
+                            //Delete promise at some point
+                            function addThenFetchPromise(info, index) {
+                                return new Promise(function (resolve, reject) {
+                                    $.post(URL + "/add-song", { "songURI": info.uris[index], "pc": getCookie('pc') }, function (data, status) {
+                                    if (!data) {
+                                        console.log(data)
+                                        reject();
+                                    }
+                                    resolve(data);
+                                    })
+                                });
+                            }
+
                             function deleteSearchButtons() {
                                 $('#searchResultsButtons').html("");
                             }
@@ -83,6 +107,34 @@
                                     document.getElementById("searchButton").click();
                                 }
                             });
+                            function fetchPlaylist() {
+                                console.log("Attempting to fetch playist for party: " + getCookie('pc'))
+                                $.post(URL + "/fetch-playlist", { "pc": getCookie('pc') }, function (data, status) {
+                                    let sHTML = '<div><font id="pc" size="4" style="color: #66bfed"></font></div>';
+                                    console.log("Attempting to fetch playist for party: " + getCookie('pc'))
+                                    if (status === "success") {
+                                        console.log(data)
+                                        if (data.names.length === 0) {
+                                            $('#playlistList').html('<div><font id="noResultsAlert" size="4" style="color: #6c757d">Add songs to the playlist to start the party!</font></div>');
+                                        }
+                                        else {
+                                            sHTML = '<div><font id="noResultsAlert" size="4" style="color: #6c757d">Current Playlist</font></div>';
+                                            for (let i = 0; i < data.names.length; i++) {
+                                                sHTML += '<div width="150px" style="background-color: lightslategray; width: 450px; height: 1px;"/>'
+                                                        + '<div><table style="margin-top: 4px; margin-bottom: 4px; margin-left: 70px; margin-right: 10px; width: 310px;"><tr valign="top"><td style="text-align: left; min-width: 170px; max-width: 170px; overflow: hidden;"><div style=" color: #c6c4e7; width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Song: ' + data.names[i]
+                                                    + '</div></td><td rowspan="2"><img src="' + data.images[i] + '" style="height: 64px; width: 64px; left-margin: 25;" /></td></tr><tr><td  style="text-align: left; max-width: 170px; overflow: hidden;"><div style=" color: #c6c4e7; width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Artist: ' + data.artists[i] + '</div></td></tr></table> </div></div>';
+                                            }
+                                            $('#playlistList').html(sHTML);
+                                            sHTML += "ul"
+                                        }
+                                    }
+                                    else {
+                                        $('#playlistList').html('<div><font id="noResultsAlert" size="4" style="color: #6c757d">Add songs to the playlist to start the party!</font></div>');
+                                    }
+                                })
+                            }
+                            setInterval(fetchPlaylist, 15000);
+                            fetchPlaylist();
                         </script>
                     </form>
             
