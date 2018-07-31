@@ -15,15 +15,15 @@ var bodyParser = require('body-parser');
 
 
 //const URL_ADDRESS = "192.168.1.3";
-//const URL_ADDRESS = "localhost";
+const URL_ADDRESS = "localhost";
 //const URL_ADDRESS = "spotify-partybox.herokuapp.com";
-const URL_ADDRESS = "www.jukibox.com";
+//const URL_ADDRESS = "www.jukibox.com";
 const PORT = 8888;
 
 var client_id = 'a00ebad9444f4848b35b79bb9f225cbd'; // Your client id
 var client_secret = 'b216eba609be4c0fb0148c678732fc98'; // Your secret
-//var redirect_uri = 'http://' + URL_ADDRESS + ":" + PORT + '/callback'; // Your redirect uri
-var redirect_uri = 'http://' + URL_ADDRESS + '/callback'; // Your redirect uri
+var redirect_uri = 'http://' + URL_ADDRESS + ":" + PORT + '/callback'; // Your redirect uri
+//var redirect_uri = 'http://' + URL_ADDRESS + '/callback'; // Your redirect uri
 var token_arr = new Array();
 var party_code_arr = new Array();
 var email_list = new Array();
@@ -38,7 +38,7 @@ var playlist_ids = new Array();
  */
 var generateRandomString = function (length) {
   var text = '';
-  var possible = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
+  var possible = 'ABCDEFGHIJKLMNPQRSTUVWXYZ';
 
   for (var i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -202,7 +202,7 @@ app.post('/join-party', function (request, response) {
 function partyCodeExists(code) {
   for (let i = 0; i < party_code_arr.length; i++) {
     console.log(code + ":" + party_code_arr[i])
-    if (code === party_code_arr[i])
+    if (code.toUpperCase() === party_code_arr[i].toUpperCase())
       return i;
   }
   return -1
@@ -241,6 +241,7 @@ app.post('/fetch-playlist', function (req, res) {
     res.sendStatus(404)
   }
   else {
+    console.log("Party code found")
     let at = token_arr[index]
     let userID = user_ids[index]
     let playlistID = playlist_ids[index]
@@ -255,22 +256,27 @@ app.post('/fetch-playlist', function (req, res) {
       json: true
     }
     request.get(options, function (error, response, body) {
-      if (!error && (body.tracks.items.length > 0)) {
-        let playlistArtists = new Array()
-        let playlistSongs = new Array()
-        let playlistImages = Array()
-        for (let i = 0; i < body.tracks.items.length; i++) {
-          playlistArtists[i] = body.tracks.items[i].track.album.artists[0].name
-          playlistSongs[i] = body.tracks.items[i].track.name
-          playlistImages[i] = body.tracks.items[i].track.album.images[2].url
+      console.log(body.tracks)
+      try {
+        if (!error && (body.tracks.items.length > 0)) {
+          let playlistArtists = new Array()
+          let playlistSongs = new Array()
+          let playlistImages = Array()
+          for (let i = 0; i < body.tracks.items.length; i++) {
+            playlistArtists[i] = body.tracks.items[i].track.album.artists[0].name
+            playlistSongs[i] = body.tracks.items[i].track.name
+            playlistImages[i] = body.tracks.items[i].track.album.images[2].url
+          }
+          res.send({ 'artists': playlistArtists, 'names': playlistSongs, 'images': playlistImages })
         }
-        res.send({ 'artists': playlistArtists, 'names': playlistSongs, 'images': playlistImages })
+        else if (!error) {
+          res.send({ 'artists': [], 'names': [], 'images': [] })
+        }
+        else
+          res.sendStatus(404)
+      } catch (err) {
+
       }
-      else if (!error) {
-        res.send({ 'artists': [], 'names': [], 'images': [] })
-      }
-      else
-        res.sendStatus(404)
     })
   }
 })

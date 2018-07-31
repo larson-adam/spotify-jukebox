@@ -24,9 +24,9 @@
                         <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
                         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
                         <script>
-                            //const URL = "http://localhost:8888"
+                            const URL = "http://localhost:8888"
                             //const URL = "https://spotify-partybox.herokuapp.com"
-                            const URL = "http://www.jukibox.com"
+                            //const URL = "http://www.jukibox.com"
             
                             document.getElementById('pc').innerHTML = "Party Code: " + getCookie('pc');
                             function getCookie(name) {
@@ -45,6 +45,7 @@
                                     })
 
                             }
+                            
                             function searchSpotify(track) {
                                 $.post(URL + "/search", { "pc": getCookie('pc'), "track": track }, function (data, status) {
                                     console.log("Searching for: " + track)
@@ -70,6 +71,7 @@
                                         console.log("No results found");
                                     })
                             }
+
                             function addSong(i) {
                                 let lsData = JSON.parse(localStorage.getItem('searchResults'))
                                 //console.log(lsData.uris[i])
@@ -111,7 +113,6 @@
                                 console.log("Attempting to fetch playist for party: " + getCookie('pc'))
                                 $.post(URL + "/fetch-playlist", { "pc": getCookie('pc') }, function (data, status) {
                                     let sHTML = '<div><font id="pc" size="4" style="color: #66bfed"></font></div>';
-                                    console.log("Attempting to fetch playist for party: " + getCookie('pc'))
                                     if (status === "success") {
                                         console.log(data)
                                         if (data.names.length === 0) {
@@ -134,7 +135,6 @@
                                 })
                             }
                             setInterval(fetchPlaylist, 15000);
-                            fetchPlaylist();
                         </script>
                     </form>
             
