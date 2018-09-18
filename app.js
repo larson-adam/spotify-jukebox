@@ -139,13 +139,16 @@ app.get('/callback', function (req, res) {
           if (current_index === -1) {
             var postBody = {
               url: AWSURL + '/parties',
-              headers: {'content-type': 'application/json'},
-              body: { "partyCode": party_code, "host": data.id }
-            }
-            request.post({
-              postBody
-            }, function(error, response, body){
-              console.log(response);
+              body: {
+                "partyCode": party_code, 
+                "host": data.id,
+                "accessToken": access_token,
+                "email": data.email
+              },
+              json: true
+            };
+            request.post(postBody, function(error, response, body){
+              console.log(body);
             })
             party_code_arr[party_code_arr.length] = party_code;
             token_arr[token_arr.length] = access_token;
@@ -270,7 +273,7 @@ app.post('/fetch-playlist', function (req, res) {
       json: true
     }
     request.get(options, function (error, response, body) {
-      console.log(body.tracks)
+      //console.log(body.tracks)
       try {
         if (!error && (body.tracks.items.length > 0)) {
           let playlistArtists = new Array()
@@ -332,7 +335,7 @@ app.post('/add-song', function (req, res) {
 })
 
 app.post('/search', function (req, res) {
-  console.log(req.body.pc)
+  //console.log(req.body.pc)
   let index = partyCodeExists(req.body.pc)
   let at = token_arr[index]
   console.log("Search request for: " + req.body.track)
