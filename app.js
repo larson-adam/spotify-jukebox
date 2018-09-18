@@ -12,6 +12,7 @@ var request = require('request'); // "Request" library
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var AWS = require('aws-sdk');
 
 
 //const URL_ADDRESS = "192.168.1.3";
@@ -29,6 +30,8 @@ var party_code_arr = new Array();
 var email_list = new Array();
 var user_ids = new Array();
 var playlist_ids = new Array();
+
+var apigateway = new AWS.APIGateway({apiVersion: '2015-07-09'});
 
 
 /**
@@ -133,6 +136,7 @@ app.get('/callback', function (req, res) {
         hostLoginPromise(options).then(function (data) {
           var current_index = email_list.indexOf(data.email);
           if (current_index === -1) {
+
             party_code_arr[party_code_arr.length] = party_code;
             token_arr[token_arr.length] = access_token;
             email_list[email_list.length] = data.email;
