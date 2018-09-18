@@ -12,7 +12,7 @@ var request = require('request'); // "Request" library
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var AWS = require('aws-sdk');
+//var AWS = require('aws-sdk');
 
 
 //const URL_ADDRESS = "192.168.1.3";
