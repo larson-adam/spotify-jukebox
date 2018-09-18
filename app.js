@@ -31,7 +31,8 @@ var email_list = new Array();
 var user_ids = new Array();
 var playlist_ids = new Array();
 
-var apigateway = new AWS.APIGateway({apiVersion: '2015-07-09'});
+//var apigateway = new AWS.APIGateway({apiVersion: '2015-07-09'});
+const AWSURL = 'https://wxlpdhs2th.execute-api.us-east-1.amazonaws.com/jukibox';
 
 
 /**
@@ -136,7 +137,16 @@ app.get('/callback', function (req, res) {
         hostLoginPromise(options).then(function (data) {
           var current_index = email_list.indexOf(data.email);
           if (current_index === -1) {
-
+            var postBody = {
+              url: AWSURL + '/parties',
+              headers: {'content-type': 'application/json'},
+              body: { "partyCode": party_code, "host": data.id }
+            }
+            request.post({
+              postBody
+            }, function(error, response, body){
+              console.log(response);
+            })
             party_code_arr[party_code_arr.length] = party_code;
             token_arr[token_arr.length] = access_token;
             email_list[email_list.length] = data.email;
